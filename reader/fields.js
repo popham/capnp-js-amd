@@ -7,16 +7,16 @@ define([ "./primitives" ], function(primitives) {
             return !!(primitives.bool(bytes, position, bitPosition) ^ defaultValue);
         },
         int8: function(defaultValue, bytes, position) {
-            return primitives.int8(bytes, position) ^ defaultValue | 0;
+            return primitives.int8(bytes, position) ^ defaultValue;
         },
         int16: function(defaultValue, bytes, position) {
-            return primitives.int16(bytes, position) ^ defaultValue | 0;
+            return primitives.int16(bytes, position) ^ defaultValue;
         },
         int32: function(defaultValue, bytes, position) {
-            return primitives.int32(bytes, position) ^ defaultValue | 0;
+            return primitives.int32(bytes, position) ^ defaultValue;
         },
         int64: function(defaultValue, bytes, position) {
-            return [ primitives.int32(bytes, position + 4) ^ defaultValue[0] | 0, (primitives.uint32(bytes, position) ^ defaultValue[1]) >>> 0 ];
+            return [ primitives.int32(bytes, position + 4) ^ defaultValue[0], (primitives.uint32(bytes, position) ^ defaultValue[1]) >>> 0 ];
         },
         uint8: function(defaultValue, bytes, position) {
             return (primitives.uint8(bytes, position) ^ defaultValue) >>> 0;

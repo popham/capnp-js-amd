@@ -1,5 +1,5 @@
 define([], function() {
-    return function(segment, position) {
-        return !(segment[position] || segment[position + 1] || segment[position + 2] || segment[position + 3] || segment[position + 4] || segment[position + 5] || segment[position + 6] || segment[position + 7]);
+    return function(pointer) {
+        return !(pointer.segment[pointer.position] || pointer.segment[pointer.position + 1] || pointer.segment[pointer.position + 2] || pointer.segment[pointer.position + 3] || pointer.segment[pointer.position + 4] || pointer.segment[pointer.position + 5] || pointer.segment[pointer.position + 6] || pointer.segment[pointer.position + 7]);
     };
 });

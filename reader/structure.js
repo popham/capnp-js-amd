@@ -1,38 +1,42 @@
-define([ "./layout/structure" ], function(layout) {
-    return function(ct) {
-        var Type = function(arena, depth, structure) {
+define([ "../type", "./layout/structure", "./list/structure", "./methods" ], function(type, structure, list, methods) {
+    return function(preferredListEncoding, dataBytes, pointersBytes) {
+        var t = new type.Terminal();
+        var ct = {
+            meta: 0,
+            dataBytes: dataBytes,
+            pointersBytes: pointersBytes
+        };
+        var listCt = {
+            meta: 1,
+            layout: preferredListEncoding,
+            dataBytes: dataBytes,
+            pointersBytes: pointersBytes
+        };
+        var Structure = function(arena, depth, layout) {
             if (depth > arena.maxDepth) {
                 throw new Error("Exceeded nesting depth limit");
             }
             this._arena = arena;
             this._depth = depth;
-            this._segment = structure.segment;
-            this._dataSection = structure.dataSection;
-            this._pointersSection = structure.pointersSection;
-            this._end = structure.end;
-            arena.limiter.read(structure.segment, structure.dataSection, structure.end - structure.dataSection);
+            this._segment = layout.segment;
+            this._dataSection = layout.dataSection;
+            this._pointersSection = layout.pointersSection;
+            this._end = layout.end;
+            arena.limiter.read(layout.segment, layout.dataSection, layout.end - layout.dataSection);
         };
-        Type._CT = Type.prototype._CT = ct;
-        Type._TYPE = Type.prototype._TYPE = {};
-        Type.deref = function(arena, pointer, depth) {
-            return new Type(arena, depth, layout.safe(arena, pointer));
+        Structure._TYPE = t;
+        Structure._CT = ct;
+        Structure._LIST_CT = listCt;
+        Structure._deref = function(arena, pointer, depth) {
+            return new Structure(arena, depth, structure.safe(arena, pointer));
         };
-        Type.prototype._rt = function() {
-            return {
-                meta: 0,
-                dataBytes: this._pointersSection - this._dataSection,
-                pointersBytes: this._end - this._pointersSection
-            };
+        Structure.prototype = {
+            _TYPE: t,
+            _CT: ct,
+            _LIST_CT: listCt,
+            _rt: methods.rt,
+            _layout: methods.layout
         };
-        Type.prototype._layout = function() {
-            return {
-                meta: 0,
-                segment: this._segment,
-                dataSection: this._dataSection,
-                pointersSection: this._pointersSection,
-                end: this._end
-            };
-        };
-        return Type;
+        return Structure;
     };
 });

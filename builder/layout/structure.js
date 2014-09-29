@@ -29,14 +29,15 @@ define([ "../far" ], function(far) {
         }
     };
     var intersegment = function(arena, pointer, blob, meta) {
-        var land = arena._preallocate(pointer.segment, 8);
-        if (land.segment === pointer.segment) {
+        var land = arena._preallocate(blob.segment, 8);
+        if (land.segment === blob.segment) {
             // Single hop allocation success.
             far.terminal(pointer, land);
             intrasegment(land, blob, meta);
         } else {
             // Double hop fallback.
             wordCounts(land, meta.dataBytes >>> 3, meta.pointersBytes >>> 3);
+            // Update `land` to reference the far pointer's landing pad.
             land.position -= 8;
             far.preterminal(pointer, land);
             far.terminal(land, blob);

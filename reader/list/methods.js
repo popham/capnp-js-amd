@@ -59,8 +59,6 @@ define([ "./sizes" ], function(sizes) {
         target.map = map;
         target.forEach = forEach;
         target.reduce = reduce;
-        target._rt = rt;
-        target._layout = layout;
     };
     return {
         length: length,

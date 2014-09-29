@@ -74,9 +74,9 @@ define([ "../reader/layout/any", "../reader/isNull" ], function(any, isNull) {
      * * RETURNS: Datum - The root of the branch that was zeroed.
      */
     var zero = function(arena, pointer) {
-        if (isNull(pointer.segment, pointer.position)) return;
-        var layout = any.unsafe(arena, source);
-        switch (layout.type) {
+        if (isNull(pointer)) return;
+        var layout = any.unsafe(arena, pointer);
+        switch (layout.meta) {
           case 0:
             structure(arena, layout);
             break;

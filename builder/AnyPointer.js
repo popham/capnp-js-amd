@@ -10,9 +10,9 @@ define([ "../reader/AnyPointer" ], function(Reader) {
          * No increment on `depth` since the caller of `deref` has already
          * incremented.
          */
-        return Derefable.deref(this._arena, this._pointer, this._depth);
+        return Derefable._deref(this._arena, this._pointer, this._depth);
     };
-    Any.deref = function(arena, pointer, depth) {
+    Any._deref = function(arena, pointer, depth) {
         return new Any(arena, pointer, depth);
     };
     return Any;

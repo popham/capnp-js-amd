@@ -12,7 +12,7 @@ define([ "./deep" ], function(deep) {
     return function(reader, arena) {
         var layout = reader._layout();
         var blob;
-        switch (layout.type) {
+        switch (layout.meta) {
           case 0:
             blob = arena._allocate(layout.end - layout.dataSection);
             deep.setStructure(reader._arena, layout, arena, blob);

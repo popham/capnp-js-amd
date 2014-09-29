@@ -1,5 +1,7 @@
-define([ "./deref", "./methods" ], function(deref, methods) {
-    return function(Reader, ct) {
+define([ "../../type", "./deref", "./methods" ], function(type, deref, methods) {
+    return function(Reader, preferredListEncoding) {
+        var t = new type.List(Reader._TYPE);
+        var ct = Reader._LIST_CT;
         var Structs = function(arena, depth, list) {
             if (depth > arena.maxDepth) {
                 throw new Error("Exceeded nesting depth limit");
@@ -17,13 +19,20 @@ define([ "./deref", "./methods" ], function(deref, methods) {
             this._stride = list.dataBytes + list.pointersBytes;
             arena.limiter.read(list.segment, list.begin, this._stride * list.length);
         };
-        Structs._CT = Structs.prototype._CT = ct;
-        Structs.deref = deref(Structs);
+        Structs._TYPE = t;
+        Structs._CT = ct;
+        Structs._deref = deref(Structs);
+        Structs.prototype = {
+            _TYPE: t,
+            _CT: ct,
+            _rt: methods.rt,
+            _layout: methods.layout
+        };
         Structs.prototype.get = function(index) {
             if (index < 0 || this._length <= index) {
                 throw new RangeError();
             }
-            var position = this._begin + this._stride * index;
+            var position = this._begin + index * this._stride;
             var pointers = position + this._dataBytes;
             /*
              * Do not apply the struct's memory to the traversal limit a second

@@ -1,8 +1,4 @@
-define([ "../reader/Arena", "../reader/layout/structure", "../wordAlign", "./layout/structure", "./copy/index", "./upgrade" ], function(Reader, reader, wordAlign, builder, copy, upgrade) {
-    /* Require to initialize everything to zero:
-     * * A union's discriminant isn't explicitly zeroed.
-     * * Upgrading assumes that transfered data is overwriting zeros, leaving untouched allocation at default values
-     */
+define([ "../reader/isNull", "../reader/Arena", "../reader/layout/structure", "../wordAlign", "./copy/index", "./layout/structure", "./upgrade" ], function(isNull, Reader, reader, wordAlign, copy, builder, upgrade) {
     var Builder = function(alloc, zero, size) {
         if (size < 8) size = 8;
         this.__alloc = alloc;
@@ -19,32 +15,42 @@ define([ "../reader/Arena", "../reader/layout/structure", "../wordAlign", "./lay
         return this._segments[id];
     };
     Builder.prototype.asReader = function(maxDepth, maxBytes) {
-        if (maxDepth === undefined) maxDepth = Infinity;
-        if (maxBytes === undefined) maxBytes = Infinity;
+        if (maxDepth === undefined) maxDepth = +Infinity;
+        if (maxBytes === undefined) maxBytes = +Infinity;
         return new Reader(this._segments, maxDepth, maxBytes);
     };
     Builder.prototype.initRoot = function(Structure) {
-        return this.getRoot(Structure);
+        var ctSize = Structure._CT.dataBytes + Structure._CT.pointersBytes;
+        var root = this._root();
+        var blob = this._preallocate(root.segment, ctSize);
+        builder.preallocated(root, blob, Structure._CT);
+        return Structure._deref(this, root);
     };
     Builder.prototype.initOrphan = function(Type) {
         /*
          * Only builders expose `initOrphan`, so providing a reader will error
          * out, as it should.
          */
-        return Type.initOrphan(arena);
+        return Type._initOrphan(this);
     };
     Builder.prototype.getRoot = function(Structure) {
         var ct = Structure._CT;
+        var ctSize = ct.dataBytes + ct.pointersBytes;
         var root = this._root();
-        var layout = reader.structure.safe(this, root);
-        if (layout.pointersSection - layout.dataSection < ct.dataBytes || layout.end - layout.pointersSection < ct.pointersBytes) {
-            upgrade.structure(this, root, ct);
+        if (isNull(root)) {
+            var blob = this._preallocate(root.segment, ctSize);
+            builder.preallocated(root, blob, ct);
+        } else {
+            var layout = reader.safe(this, root);
+            if (layout.end - layout.dataSection < ctSize) {
+                upgrade.structure(this, root, ct);
+            }
         }
-        return Structure.deref(this, layout.segment, 0);
+        return Structure._deref(this, root);
     };
     Builder.prototype.setRoot = function(reader) {
         if (reader._CT.meta !== 0) throw new Error("Root must be a struct");
-        copy.pointer.deep(reader, reader._arena, this._root());
+        copy.pointer.deep(reader, this, this._root());
     };
     Builder.prototype.adoptRoot = function(orphan) {
         if (orphan._arena !== this) {

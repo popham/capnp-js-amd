@@ -1,11 +1,15 @@
-define([ "./size" ], function(size) {
+define([ "../type", "./size" ], function(type, size) {
+    var t = new type.Terminal();
     var Any = function(arena, pointer, depth) {
         this._arena = arena;
         this._pointer = pointer;
         this._depth = depth;
     };
-    Any._TYPE = Any.prototype._TYPE = {};
-    Any.deref = function(arena, pointer, depth) {
+    Any._TYPE = t;
+    Any.prototype = {
+        _TYPE: t
+    };
+    Any._deref = function(arena, pointer, depth) {
         return new Any(arena, pointer, depth);
     };
     Any.prototype._bytes = function() {
@@ -17,10 +21,10 @@ define([ "./size" ], function(size) {
          * No increment on `depth` since the caller of `deref` has already
          * incremented.
          */
-        return Derefable.deref(this._arena, this._pointer, this._depth);
+        return Derefable._deref(this._arena, this._pointer, this._depth);
     };
-    Any.prototype.initStruct = function(Struct) {};
-    Any.prototype.initList = function(List, length) {};
+    Any.prototype._initStruct = function(Struct) {};
+    Any.prototype._initList = function(List, length) {};
     Any.prototype.set = function(reader) {};
     Any.prototype.adopt = function(orphan) {};
     Any.prototype.disownAs = function(Derefable) {};

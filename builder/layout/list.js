@@ -48,7 +48,7 @@ define([ "../far", "./structure" ], function(far, structure) {
     };
     var intersegment = function(arena, pointer, blob, meta, length) {
         var land = arena._preallocate(pointer.segment, 8);
-        if (land.segment === pointer.segment) {
+        if (land.segment === blob.segment) {
             // Single hop allocation success.
             far.terminal(pointer, land);
             intrasegment(land, blob, meta, length);

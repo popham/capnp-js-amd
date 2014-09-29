@@ -1,4 +1,4 @@
-define([ "../../reader/layout/any", "../../reader/list/meta", "../layout/structure", "../layout/list" ], function(any, meta, structure, layout) {
+define([ "../../reader/layout/any", "../../reader/list/meta", "../../reader/isNull", "../layout/structure", "../layout/list" ], function(any, meta, isNull, structure, layout) {
     /*
      * Copy a structure to a blob of memory.
      *
@@ -107,7 +107,7 @@ define([ "../../reader/layout/any", "../../reader/list/meta", "../layout/structu
                 // Clobber any junk on the tail of the source in preparation for
                 // copying.
                 source.segment[source.position + bytes] &= 255 >>> 8 - remainder;
-                bytes += remainder ? 1 : 0;
+                bytes += 1;
             }
         } else {
             bytes = layout.length * (layout.dataBytes + layout.pointersBytes);
@@ -190,15 +190,17 @@ define([ "../../reader/layout/any", "../../reader/list/meta", "../layout/structu
      * * RETURNS: Datum - Root of the branch that was copied.
      */
     var copy = function(arena, source, targetArena, target) {
-        var layout = any.safe(arena, source);
-        switch (layout.type) {
-          case 0:
-            setStructurePointer(arena, layout, targetArena, target);
-            break;
+        if (!isNull(source)) {
+            var layout = any.safe(arena, source);
+            switch (layout.meta) {
+              case 0:
+                setStructurePointer(arena, layout, targetArena, target);
+                break;
 
-          case 1:
-            setListPointer(arena, layout, targetArena, target);
-            break;
+              case 1:
+                setListPointer(arena, layout, targetArena, target);
+                break;
+            }
         }
         return target;
     };

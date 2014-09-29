@@ -40,6 +40,19 @@ define([ "../primitives", "./safe", "./unsafe" ], function(primitives, safe, uns
         };
     };
     /*
+     * Compute the layout of a blob from its metadata.
+     */
+    var meta = function(blob, meta_) {
+        var pointers = blob.position + meta_.dataBytes;
+        return {
+            meta: 0,
+            segment: blob.segment,
+            dataSection: blob.position,
+            pointersSection: pointers,
+            end: pointers + meta_.pointersBytes
+        };
+    };
+    /*
      * Compute the layout of an intrasegment structure pointer's structure.
      * This function also handles the targets of single-far pointers.
      *
@@ -71,6 +84,7 @@ define([ "../primitives", "./safe", "./unsafe" ], function(primitives, safe, uns
     return {
         safe: safe(intrasegment, intersegment, 0),
         unsafe: unsafe(intrasegment, intersegment, 0),
+        meta: meta,
         intrasegment: intrasegment,
         intersegment: intersegment,
         dataBytes: dataBytes,

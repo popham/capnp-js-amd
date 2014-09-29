@@ -1,6 +1,7 @@
-define([ "./reader/index", "./builder/index" ], function(reader, builder) {
+define([ "./reader/index", "./builder/index", "./builder/Allocator" ], function(reader, builder, Allocator) {
     return {
         reader: reader,
-        builder: builder
+        builder: builder,
+        Allocator: Allocator
     };
 });
