@@ -1,6 +1,6 @@
 {
   "name": "capnp-js",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "authors": [
     "Tim Popham"
   ],
@@ -10,7 +10,12 @@
     "amd"
   ],
   "keywords": [
-    "capnproto"
+    "capnproto",
+    "capnp",
+    "capnpc",
+    "pack",
+    "serialize",
+    "serialization"
   ],
   "license": "MIT",
   "homepage": "https://github.com/popham/capnp-js-amd/",
