@@ -1,10 +1,10 @@
 {
   "name": "capnp-js",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "authors": [
     "Tim Popham"
   ],
-  "description": "Capnproto run-time decoding and encoding for AMD.",
+  "description": "Capnproto run-time decoding and encoding for AMD",
   "main": "index.js",
   "moduleType": [
     "amd"
@@ -21,8 +21,5 @@
   "homepage": "https://github.com/popham/capnp-js-amd/",
   "ignore": [
     "**/.*"
-  ],
-  "dependencies": {
-    "text-encoding": "~0.1.0"
-  }
+  ]
 }
