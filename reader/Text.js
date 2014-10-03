@@ -1,5 +1,4 @@
-define([ "text-encoding", "../type", "./list/deref", "./list/methods" ], function(text, type, deref, methods) {
-    var decoder = new text.TextDecoder("utf-8");
+define([ "../type", "./list/deref", "./list/methods" ], function(type, deref, methods) {
     var t = new type.Terminal();
     var ct = {
         meta: 1,
@@ -20,6 +19,11 @@ define([ "text-encoding", "../type", "./list/deref", "./list/methods" ], functio
     Text._TYPE = t;
     Text._CT = ct;
     Text._deref = deref(Text);
+    // http://stackoverflow.com/questions/17191945/conversion-between-utf-8-arraybuffer-and-string#answer-17192845
+    Text._decode = function(uintArray) {
+        var encodedString = String.fromCharCode.apply(null, uintArray);
+        return decodeURIComponent(escape(encodedString));
+    };
     Text.prototype = {
         _TYPE: t,
         _CT: ct,
@@ -33,7 +37,7 @@ define([ "text-encoding", "../type", "./list/deref", "./list/methods" ], functio
         return this._segment.subarray(this._begin, this._begin + this._length - 1);
     };
     Text.prototype.asString = function() {
-        return decoder.decode(this.asBytes());
+        return Text._decode(this.asBytes());
     };
     return Text;
 });

@@ -1,5 +1,4 @@
-define([ "text-encoding", "../reader/Text", "./list/statics", "./list/methods", "./layout/list" ], function(text, Reader, statics, methods, layout) {
-    var encoder = new text.TextEncoder("utf-8");
+define([ "../reader/Text", "./list/statics", "./list/methods", "./layout/list" ], function(Reader, statics, methods, layout) {
     var t = Reader._TYPE;
     var ct = Reader._CT;
     var Text = function(arena, layout, isDisowned) {
@@ -14,6 +13,16 @@ define([ "text-encoding", "../reader/Text", "./list/statics", "./list/methods", 
     Text._READER = Reader;
     Text._TYPE = t;
     Text._CT = ct;
+    Text._decode = Reader._decode;
+    // http://stackoverflow.com/questions/17191945/conversion-between-utf-8-arraybuffer-and-string#answer-17192845
+    Text._encode = function(string) {
+        string = unescape(encodeURIComponent(string));
+        var uintArray = [];
+        for (var i = 0; i < string.length; ++i) {
+            uintArray.push(string.charCodeAt(i));
+        }
+        return new Uint8Array(uintArray);
+    };
     statics.install(Text);
     Text._set = function(arena, pointer, value) {
         var source, length;
@@ -25,7 +34,7 @@ define([ "text-encoding", "../reader/Text", "./list/statics", "./list/methods", 
             length = value._length - 1;
         } else if (typeof value === "string") {
             source = {
-                segment: encoder.encode(value),
+                segment: Text._encode(value),
                 position: 0
             };
             length = source.segment.length;
@@ -50,7 +59,7 @@ define([ "text-encoding", "../reader/Text", "./list/statics", "./list/methods", 
         return this._segment.subarray(this._begin, this._begin + this._length);
     };
     Text.prototype.asString = function() {
-        return decoder.decode(this.asBytes());
+        return Reader._decode(this.asBytes());
     };
     return Text;
 });

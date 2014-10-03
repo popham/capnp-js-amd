@@ -1,23 +1,37 @@
 define([ "./reader/Arena", "./reader/primitives", "./builder/primitives" ], function(Arena, reader, builder) {
-    var header = function(arena) {
+    var fromStruct = function(instance) {
+        var arena = instance._arena;
         var count = arena._segments.length - 1;
+        var segments = arena._segments.map(function(segment) {
+            return segment.subarray(0, segment._position);
+        });
         var bytes = new Uint8Array(Math.ceil(count / 2) + 1);
         builder.uint32(count, bytes, 0);
-        var i;
-        for (i = 0; i < arena._segments.length; ++i) {
+        for (var i = 0; i < arena._segments.length; ++i) {
             builder.uint32(arena._segments[i]._position >>> 3, bytes, 1 + i << 2);
         }
+        segments.unshift(bytes);
+        return segments;
     };
-    var lengths = function(header, blob) {
-        if (blob.length < 4) throw new RangeError();
-        var ss = [];
+    var toArena = function(blob) {
+        if (blob.length < 4) {
+            throw new RangeError();
+        }
+        var segments = [];
         var end = 4 + (reader.uint32(blob, 0) + 1 << 2);
-        if (blob.length < end) throw new RangeError();
-        for (var i = 0; i < end; i += 4) ss.push(reader.uint32(blob, i));
-        return ss;
+        if (blob.length < end) {
+            throw new RangeError();
+        }
+        var begin = end;
+        for (var i = 0; i < end; i += 4) {
+            var length = reader.uint32(blob, i);
+            segments.push(blob.subarray(begin, begin + length));
+            begin += length;
+        }
+        return new Arena(segments);
     };
     return {
-        header: header,
-        lengths: lengths
+        fromStruct: fromStruct,
+        toArena: toArena
     };
 });
