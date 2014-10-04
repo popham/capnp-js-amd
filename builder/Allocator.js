@@ -37,7 +37,7 @@ define([ "./Arena" ], function(Arena) {
          */
         for (var nMod3, nMod4, nUint24 = 0, nOutIdx = 0, nInIdx = 0; nInIdx < nInLen; ++nInIdx) {
             nMod4 = nInIdx & 3;
-            nUint24 |= b64ToUint6(sBase64.charCodeAt(nInIdx)) << 18 - 6 * nMod4;
+            nUint24 |= b64ToUint6(b64.charCodeAt(nInIdx)) << 18 - 6 * nMod4;
             if (nMod4 === 3 || nInLen - nInIdx === 1) {
                 for (nMod3 = 0; nMod3 < 3 && nOutIdx < nOutLen; ++nMod3, ++nOutIdx) {
                     blob[nOutIdx] = nUint24 >>> (16 >>> nMod3 & 24) & 255;
