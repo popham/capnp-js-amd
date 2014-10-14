@@ -152,7 +152,10 @@ define([ "../reader/layout/index", "../reader/isNull", "../reader/far", "./far",
             blob = arena._preallocate(pointer.segment, layout.length * bytes);
             begin = blob.position;
         }
-        // Shift of the list's first pointer section.
+        /*
+         * Shift of the list's first pointer section (only useful for local
+         * allocations).
+         */
         var delta = begin - layout.begin;
         // Misalignment between compile-time structures and run-time structures.
         var mis = bytes - rt.dataBytes - rt.pointersBytes;
@@ -165,17 +168,17 @@ define([ "../reader/layout/index", "../reader/isNull", "../reader/far", "./far",
             position: begin
         };
         var slop = {
-            data: rt.dataBytes - ct.dataBytes,
-            pointers: rt.pointersBytes - ct.pointersBytes
+            data: ct.dataBytes - rt.dataBytes,
+            pointers: ct.pointersBytes - rt.pointersBytes
         };
         for (var i = 0; i < layout.length; ++i) {
             // Verbatim copy the data section.
             arena._write(iSource, rt.dataBytes, iTarget);
             // Update iterator positions.
-            iSource.position += ct.dataBytes;
-            iTarget.position += ct.dataBytes;
+            iSource.position += rt.dataBytes;
+            iTarget.position += rt.dataBytes;
             iTarget.position += slop.data;
-            if (ct.encoding >= 6) {
+            if (rt.encoding >= 6) {
                 if (layout.segment === blob.segment) {
                     intrasegmentMovePointers(iTarget, rt.pointersBytes >>> 3, delta + i * mis);
                 } else {
@@ -185,7 +188,7 @@ define([ "../reader/layout/index", "../reader/isNull", "../reader/far", "./far",
             // Realign the target iterator.
             iTarget.position += slop.pointers;
         }
-        builder.list.preallocated(pointer, blob, rt, layout.length);
+        builder.list.preallocated(pointer, blob, ct, layout.length);
     };
     return {
         list: list,
