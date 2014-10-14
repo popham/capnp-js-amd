@@ -43,7 +43,7 @@ define([ "../reader/Text", "./list/statics", "./list/methods", "./layout/list" ]
         }
         var blob = arena._preallocate(pointer.segment, length + 1);
         arena._write(source, length, blob);
-        blob.segment[length] = 0;
+        blob.segment[blob._position + length] = 0;
         layout.preallocated(pointer, blob, ct, length + 1);
     };
     Text.prototype = {
