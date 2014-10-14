@@ -26,7 +26,7 @@ define([ "../../type", "../copy/pointer", "../layout/list", "./deref", "./init",
                 return Structs._deref(arena, pointer);
             };
         } else if (Structs._CT.layout === 1) {
-            throw new Error("Single bit structures are not suported");
+            throw new Error("Single bit structures are not supported");
         } else {
             Structs._init = init(Structs);
         }
