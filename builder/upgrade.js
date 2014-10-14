@@ -1,4 +1,4 @@
-define([ "../reader/layout/index", "../reader/isNull", "../reader/far", "./far", "./layout/index", "./shiftOffset", "./meta" ], function(reader, isNull, farReader, farBuilder, builder, shiftOffset, meta) {
+define([ "../reader/layout/index", "../reader/isNull", "../reader/far", "../reader/list/meta", "./far", "./layout/index", "./shiftOffset" ], function(reader, isNull, farReader, meta, farBuilder, builder, shiftOffset) {
     /*
      * Update a far pointer with its list or structure pointer if it is local to
      * `blob`.
