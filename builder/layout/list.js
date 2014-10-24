@@ -40,6 +40,10 @@ define([ "../far", "./structure" ], function(far, structure) {
             lo(land, meta.layout, length);
             if (meta.layout === 7) {
                 // Write the list's tag.
+                blob.segment[blob.position] = length << 2;
+                blob.segment[blob.position + 1] = length >>> 6;
+                blob.segment[blob.position + 2] = length >>> 14;
+                blob.segment[blob.position + 3] = length >>> 22;
                 structure.wordCounts(blob, meta.dataBytes >>> 3, meta.pointersBytes >>> 3);
             }
             // Point at the off-segment blob's local pointer.
