@@ -1,4 +1,4 @@
-define([ "../../reader/list/Bool", "../../reader/layout/list", "../copy/deep", "../layout/list", "./statics", "./methods", "../primitives" ], function(Reader, reader, copy, builder, statics, methods, primitives) {
+define([ "../../reader/list/Bool", "../../reader/layout/list", "../copy/pointer", "../layout/list", "./statics", "./methods", "../primitives" ], function(Reader, reader, copy, builder, statics, methods, primitives) {
     var t = Reader._TYPE;
     var ct = Reader._CT;
     var Bools = function(arena, layout, isDisowned) {
@@ -33,12 +33,7 @@ define([ "../../reader/list/Bool", "../../reader/layout/list", "../copy/deep", "
             pointersBytes: ct.pointersBytes
         }, true);
     };
-    Bools._set = function(arena, pointer, value) {
-        if (!this._TYPE.equiv(value._TYPE)) {
-            throw new TypeError();
-        }
-        copy.setListPointer(value._arena, value._layout(), arena, pointer);
-    };
+    Bools._set = statics.set(Bools);
     Bools.prototype = {
         _TYPE: t,
         _CT: ct,

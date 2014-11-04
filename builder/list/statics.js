@@ -10,7 +10,7 @@ define([ "./adopt", "./deref", "./init", "./initOrphan", "./set" ], function(ado
             Nonstruct._adopt = adopt(Nonstruct);
             Nonstruct._init = init(Nonstruct);
             Nonstruct._initOrphan = initOrphan(Nonstruct);
-            Nonstruct._set = set;
+            Nonstruct._set = set(Nonstruct);
         }
     };
 });

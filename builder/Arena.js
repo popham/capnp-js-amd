@@ -1,4 +1,4 @@
-define([ "../reader/isNull", "../reader/Arena", "../reader/layout/structure", "../wordAlign", "./copy/index", "./layout/structure", "./upgrade" ], function(isNull, Reader, reader, wordAlign, copy, builder, upgrade) {
+define([ "../reader/isNull", "../reader/Arena", "../reader/layout/structure", "../wordAlign", "./copy/pointer", "./layout/structure", "./upgrade" ], function(isNull, Reader, reader, wordAlign, copy, builder, upgrade) {
     var Builder = function(alloc, zero, size) {
         if (size < 8) size = 8;
         this.__alloc = alloc;
@@ -13,10 +13,15 @@ define([ "../reader/isNull", "../reader/Arena", "../reader/layout/structure", ".
         }
         return this._segments[id];
     };
+    Builder.IS_READER = Builder.prototype.IS_READER = false;
     Builder.prototype.asReader = function(maxDepth, maxBytes) {
         if (maxDepth === undefined) maxDepth = +Infinity;
         if (maxBytes === undefined) maxBytes = +Infinity;
         return new Reader(this._segments, maxDepth, maxBytes);
+    };
+    Builder.prototype.isEquivTo = function(arena) {
+        // Determine whether the two arenas share the same underlying segments.
+        return this._segments === arena._segments;
     };
     Builder.prototype.initRoot = function(Structure) {
         var ctSize = Structure._CT.dataBytes + Structure._CT.pointersBytes;
@@ -47,7 +52,7 @@ define([ "../reader/isNull", "../reader/Arena", "../reader/layout/structure", ".
     };
     Builder.prototype.setRoot = function(reader) {
         if (reader._CT.meta !== 0) throw new Error("Root must be a struct");
-        copy.pointer.deep(reader, this, this._root());
+        copy.setStructPointer(reader._arena, reader._layout(), this, this._root());
         this._isRooted = true;
     };
     Builder.prototype.adoptRoot = function(orphan) {
@@ -57,7 +62,10 @@ define([ "../reader/isNull", "../reader/Arena", "../reader/layout/structure", ".
         if (this._isRooted) {
             throw new Error("The arena already has a root.");
         }
-        copy.pointer.shallow(orphan, this._root());
+        builder.nonpreallocated(this, this._root(), {
+            segment: orphan._segment,
+            position: orphan._dataSection
+        }, orphan._rt());
         this._isRooted = true;
     };
     Builder.prototype._root = function() {

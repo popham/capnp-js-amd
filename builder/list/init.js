@@ -4,7 +4,7 @@ define([ "../../reader/layout/list", "../layout/list" ], function(reader, list) 
         return function(arena, pointer, length) {
             var size = length * stride;
             var blob = arena._preallocate(pointer.segment, size);
-            list.preallocated(pointer, blob, ct, length);
+            list.preallocated(pointer, blob, List._CT, length);
             return new List(arena, reader.unsafe(arena, pointer), false);
         };
     };

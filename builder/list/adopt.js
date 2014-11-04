@@ -4,6 +4,9 @@ define([ "../layout/list" ], function(layout) {
             if (!value._isDisowned) {
                 throw new ValueError("Cannot adopt a non-orphan");
             }
+            if (!arena.isEquivTo(value._arena)) {
+                throw new ValueError("Cannot adopt from a different arena");
+            }
             var meta = value._rt();
             var blob = {
                 segment: value._segment,

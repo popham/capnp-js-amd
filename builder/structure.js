@@ -1,4 +1,4 @@
-define([ "../reader/layout/structure", "../reader/methods", "./layout/structure", "./copy/deep", "./upgrade" ], function(reader, methods, builder, copy, upgrade) {
+define([ "../reader/layout/structure", "../reader/methods", "./layout/structure", "./copy/pointer", "./upgrade" ], function(reader, methods, builder, copy, upgrade) {
     return function(Reader) {
         var t = Reader._TYPE;
         var ct = Reader._CT;
@@ -18,6 +18,9 @@ define([ "../reader/layout/structure", "../reader/methods", "./layout/structure"
         Structure._adopt = function(arena, pointer, value) {
             if (!value._isDisowned) {
                 throw new ValueError("Cannot adopt a non-orphan");
+            }
+            if (!arena.isEquivTo(value._arena)) {
+                throw new ValueError("Cannot adopt from a different arena");
             }
             builder.nonpreallocated(arena, pointer, {
                 segment: value._segment,
@@ -52,7 +55,10 @@ define([ "../reader/layout/structure", "../reader/methods", "./layout/structure"
             }, true);
         };
         Structure._set = function(arena, pointer, value) {
-            copy.setStructurePointer(value._arena, value._layout(), arena, pointer);
+            if (t !== value._TYPE) {
+                throw new TypeError();
+            }
+            copy.setStructPointer(value._arena, value._layout(), arena, pointer);
         };
         Structure.prototype = {
             _TYPE: t,
