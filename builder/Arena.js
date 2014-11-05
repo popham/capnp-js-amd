@@ -95,9 +95,11 @@ define([ "../reader/isNull", "../reader/Arena", "../reader/layout/structure", ".
      *   few functions.
      */
     Builder.prototype._allocate = function(bytes) {
+        var segment;
         bytes = wordAlign(bytes);
         // Greedily try to find sufficient space within `this._segments`.
-        this._segments.forEach(function(segment) {
+        for (var i = 0; i < this._segments.length; ++i) {
+            segment = this._segments[i];
             var oldEnd = segment._position;
             if (oldEnd + bytes < segment.length) {
                 segment._position += bytes;
@@ -106,10 +108,10 @@ define([ "../reader/isNull", "../reader/Arena", "../reader/layout/structure", ".
                     position: oldEnd
                 };
             }
-        });
+        }
         // Create a new segment.
         if (this._nextSize < bytes) this._nextSize = bytes;
-        var segment = this.__alloc(this._nextSize);
+        segment = this.__alloc(this._nextSize);
         // Double size for next allocation.
         this._nextSize = this._nextSize << 1;
         segment._id = this._segments.length;

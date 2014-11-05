@@ -36,7 +36,6 @@ define([ "../far", "./structure" ], function(far, structure) {
             };
             // Build the local pointer.
             land.segment[land.position] = 1;
-            // Zero offset by construction.
             if (meta.layout === 7) {
                 compositeLo(land, blob, meta, length);
                 // Write the list's tag.

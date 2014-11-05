@@ -1,4 +1,4 @@
-define([ "../reader/layout/index", "../reader/isNull", "../reader/far", "../reader/list/meta", "./far", "./layout/index", "./shiftOffset" ], function(reader, isNull, farReader, meta, farBuilder, builder, shiftOffset) {
+define([ "../reader/layout/index", "../reader/isNull", "../reader/far", "../reader/list/meta", "./primitives", "./far", "./layout/index", "./shiftOffset" ], function(reader, isNull, farReader, meta, encode, farBuilder, builder, shiftOffset) {
     /*
      * Update a far pointer with its list or structure pointer if it is local to
      * `blob`.
@@ -10,14 +10,15 @@ define([ "../reader/layout/index", "../reader/isNull", "../reader/far", "../read
     var far = function(arena, pointer) {
         var doubleFar = !!(pointer.segment[pointer.position] & 4);
         var blob = farReader.next(arena, pointer);
-        if (doubleFar) {
-            blob = farReader.next(arena, blob);
-        }
+        if (doubleFar) blob = farReader.next(arena, blob);
         if (pointer.segment === blob.segment) {
-            var offset = pointer.position + 8 - blob.position;
+            // The blob is now local
             var tag = farReader.tag(arena, pointer);
+            var offset = blob.position - (pointer.position + 8);
+            // Copy everything but the offset
             arena._write(tag, 8, pointer);
-            shiftOffset(pointer, offset);
+            encode.int32(offset >>> 1, pointer.segment, pointer.position);
+            pointer.segment[pointer.position] |= tag.segment[tag.position] & 3;
             // Zero the landing pad.
             if (doubleFar) {
                 // Double-far.
@@ -62,12 +63,11 @@ define([ "../reader/layout/index", "../reader/isNull", "../reader/far", "../read
     var intersegmentMovePointers = function(arena, iSource, length, iTarget) {
         for (var i = 0; i < length; ++i, iSource.position += 8, iTarget.position += 8) {
             if (!isNull(iTarget)) {
-                var blob = farReader.blob(iTarget);
                 var typeBits = iSource.segment[iSource.position] & 3;
                 switch (typeBits) {
                   case 0:
                   case 1:
-                    // Use the old pointer as a landing pad.
+                    // Was local, so use the old pointer as a landing pad.
                     farBuilder.terminal(iTarget, iSource);
                     break;
 
@@ -76,8 +76,7 @@ define([ "../reader/layout/index", "../reader/isNull", "../reader/far", "../read
                      * Update the target pointer for possible locality with its
                      * blob, and discard the old far pointer.
                      */
-                    far(arena, iTarget, blob);
-                    arena._zero(iSource, 8);
+                    far(arena, iTarget);
                 }
             }
         }
@@ -94,13 +93,15 @@ define([ "../reader/layout/index", "../reader/isNull", "../reader/far", "../read
      *   structure.
      */
     var structure = function(arena, pointer, ct) {
-        var layout = reader.structure.unsafe(arena, pointer);
+        var rtLength;
         var blob = arena._preallocate(pointer.segment, ct.dataBytes + ct.pointersBytes);
+        var layout = reader.structure.unsafe(arena, pointer);
+        rtLength = layout.pointersSection - layout.dataSection;
         // Verbatim copy of the data section.
         arena._write({
             segment: layout.segment,
             position: layout.dataSection
-        }, layout.pointersSection - layout.dataSection, blob);
+        }, rtLength, blob);
         // Set up pointers section source and target iterators.
         var iSource = {
             segment: layout.segment,
@@ -111,19 +112,19 @@ define([ "../reader/layout/index", "../reader/isNull", "../reader/far", "../read
             position: blob.position + ct.dataBytes
         };
         // Make a verbatim copy of the pointers section.
-        var pointersBytes = layout.end - layout.pointersSection;
-        arena._write(iSource, pointersBytes, iTarget);
+        rtLength = layout.end - layout.pointersSection;
+        arena._write(iSource, rtLength, iTarget);
         if (layout.segment === blob.segment) {
             // Moving within the same segment
-            intrasegmentMovePointers(iTarget, pointersBytes >>> 3, blob.position - layout.dataSection);
+            intrasegmentMovePointers(iTarget, rtLength >>> 3, blob.position - layout.dataSection);
             // Clobber the old structure entirely.
             arena._zero({
                 segment: layout.segment,
-                position: layout.begin
-            }, layout.end - layout.begin);
+                position: layout.dataSection
+            }, rtLength);
         } else {
             // Moving to another segment.
-            intersegmentMovePointers(arena, iSource, pointersBytes >>> 3, iTarget);
+            intersegmentMovePointers(arena, iSource, rtLength >>> 3, iTarget);
             // Clobber the old structure's data section.
             arena._zero({
                 segment: layout.segment,
