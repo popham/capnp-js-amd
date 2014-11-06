@@ -61,10 +61,10 @@ define([ "../../reader/list/meta", "./pointer" ], function(meta, pointer) {
             position: blob.position
         };
         for (var i = 0; i < layout.length; ++i) {
-            var end = source.position + layout.pointersBytes;
             // Skip the data section.
             source.position += layout.dataBytes;
             target.position += layout.dataBytes;
+            var end = source.position + layout.pointersBytes;
             // Copy the pointer section.
             for (;source.position < end; source.position += 8, target.position += 8) {
                 pointer.setAnyPointer(arena, source, targetArena, target);

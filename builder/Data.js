@@ -11,8 +11,8 @@ define([ "../reader/Data", "./list/statics", "./list/methods", "./layout/list" ]
         this._pointersBytes = 0;
     };
     Data._READER = Reader;
-    Data._CT = ct;
     Data._TYPE = t;
+    Data._CT = ct;
     statics.install(Data);
     Data._setParams = function(value) {
         if (t === value._TYPE) {

@@ -17,6 +17,7 @@ define([ "../../type", "./methods", "./statics" ], function(type, methods, stati
             this._pointersBytes = list.pointersBytes;
             this._stride = this._dataBytes + this._pointersBytes;
         };
+        Pointers._READER = Nonstruct;
         Pointers._TYPE = t;
         Pointers._CT = ct;
         statics.install(Pointers);

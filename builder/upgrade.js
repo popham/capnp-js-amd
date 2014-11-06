@@ -153,11 +153,15 @@ define([ "../reader/layout/index", "../reader/isNull", "../reader/far", "../read
             blob = arena._preallocate(pointer.segment, layout.length * bytes);
             begin = blob.position;
         }
+        var slop = {
+            data: ct.dataBytes - rt.dataBytes,
+            pointers: ct.pointersBytes - rt.pointersBytes
+        };
         /*
          * Shift of the list's first pointer section (only useful for local
          * allocations).
          */
-        var delta = begin - layout.begin;
+        var delta = begin - layout.begin + slop.data;
         // Misalignment between compile-time structures and run-time structures.
         var mis = bytes - rt.dataBytes - rt.pointersBytes;
         var iSource = {
@@ -168,20 +172,17 @@ define([ "../reader/layout/index", "../reader/isNull", "../reader/far", "../read
             segment: blob.segment,
             position: begin
         };
-        var slop = {
-            data: ct.dataBytes - rt.dataBytes,
-            pointers: ct.pointersBytes - rt.pointersBytes
-        };
         for (var i = 0; i < layout.length; ++i) {
             // Verbatim copy the data section.
             arena._write(iSource, rt.dataBytes, iTarget);
-            // Update iterator positions.
             iSource.position += rt.dataBytes;
             iTarget.position += rt.dataBytes;
             iTarget.position += slop.data;
-            if (rt.encoding >= 6) {
+            if (rt.layout >= 6) {
                 if (layout.segment === blob.segment) {
+                    arena._write(iSource, rt.pointersBytes, iTarget);
                     intrasegmentMovePointers(iTarget, rt.pointersBytes >>> 3, delta + i * mis);
+                    iSource.position += rt.pointersBytes;
                 } else {
                     intersegmentMovePointers(arena, iSource, rt.pointersBytes >>> 3, iTarget);
                 }
