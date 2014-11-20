@@ -11,12 +11,13 @@ define([ "../../type", "./deref", "./methods" ], function(type, deref, methods) 
             dataBytes: 0,
             pointersBytes: 8
         };
-        var Pointers = function(arena, depth, list) {
+        var Pointers = function(arena, depth, isOrphan, list) {
             if (depth > arena.maxDepth) {
                 throw new Error("Exceeded nesting depth limit");
             }
             this._arena = arena;
             this._depth = depth;
+            this._isOrphan = isOrphan;
             this._segment = list.segment;
             this._begin = list.begin;
             this._length = list.length;

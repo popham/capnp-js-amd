@@ -2,7 +2,7 @@ define([ "../../type", "./deref", "./methods" ], function(type, deref, methods) 
     return function(Reader, preferredListEncoding) {
         var t = new type.List(Reader._TYPE);
         var ct = Reader._LIST_CT;
-        var Structs = function(arena, depth, list) {
+        var Structs = function(arena, depth, isOrphan, list) {
             if (depth > arena.maxDepth) {
                 throw new Error("Exceeded nesting depth limit");
             }
@@ -11,6 +11,7 @@ define([ "../../type", "./deref", "./methods" ], function(type, deref, methods) 
             }
             this._arena = arena;
             this._depth = depth;
+            this._isOrphan = isOrphan;
             this._segment = list.segment;
             this._begin = list.begin;
             this._length = list.length;
@@ -39,7 +40,7 @@ define([ "../../type", "./deref", "./methods" ], function(type, deref, methods) 
              * time.
              */
             this._arena.limiter.unread(this._stride);
-            return new Reader(this._arena, this._depth + 1, {
+            return new Reader(this._arena, this._depth + 1, false, {
                 meta: 0,
                 segment: this._segment,
                 dataSection: position,

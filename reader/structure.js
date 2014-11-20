@@ -12,12 +12,13 @@ define([ "../type", "./layout/structure", "./list/structure", "./methods" ], fun
             dataBytes: dataBytes,
             pointersBytes: pointersBytes
         };
-        var Structure = function(arena, depth, layout) {
+        var Structure = function(arena, depth, isOrphan, layout) {
             if (depth > arena.maxDepth) {
                 throw new Error("Exceeded nesting depth limit");
             }
             this._arena = arena;
             this._depth = depth;
+            this._isOrphan = isOrphan;
             this._segment = layout.segment;
             this._dataSection = layout.dataSection;
             this._pointersSection = layout.pointersSection;
@@ -28,7 +29,7 @@ define([ "../type", "./layout/structure", "./list/structure", "./methods" ], fun
         Structure._CT = ct;
         Structure._LIST_CT = listCt;
         Structure._deref = function(arena, pointer, depth) {
-            return new Structure(arena, depth, structure.safe(arena, pointer));
+            return new Structure(arena, depth, false, structure.safe(arena, pointer));
         };
         Structure.prototype = {
             _TYPE: t,

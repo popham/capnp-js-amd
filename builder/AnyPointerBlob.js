@@ -1,19 +1,15 @@
 define([ "../reader/AnyPointerBlob", "../reader/isNull", "../reader/layout/any", "../reader/list/meta", "../reader/list/sizes", "./layout/index", "./copy/blob" ], function(Reader, isNull, any, meta, sizes, builder, copy) {
     var t = Reader._TYPE;
-    var Any = function(arena, layout, isDisowned) {
+    var Any = function(arena, isOrphan, layout) {
         this._arena = arena;
+        this._isOrphan = isOrphan;
         this.__layout = layout;
-        this._isDisowned = isDisowned;
     };
     Any._READER = Reader;
     Any._TYPE = t;
     Any._adopt = function(arena, pointer, value) {
-        if (!value._isDisowned) {
-            throw new ValueError("Cannot adopt a non-orphan");
-        }
-        if (!arena.isEquivTo(value._arena)) {
-            throw new ValueError("Cannot adopt from a different arena");
-        }
+        if (!value._isOrphan) throw new ValueError("Cannot adopt a non-orphan");
+        if (!arena.isEquivTo(value._arena)) throw new ValueError("Cannot adopt from a different arena");
         switch (value.__layout.meta) {
           case 0:
             builder.structure(arena, pointer, {
@@ -34,11 +30,7 @@ define([ "../reader/AnyPointerBlob", "../reader/isNull", "../reader/layout/any",
             }, m);
             break;
         }
-        value._isDisowned = false;
-    };
-    Any._cloneAsOrphan = function(arena, pointer) {
-        var layout = any.unsafe(arena, pointer);
-        return new Any(arena, blob.setOrphanAny(arena, layout), true);
+        value._arena = null;
     };
     Any.prototype = {
         _TYPE: t

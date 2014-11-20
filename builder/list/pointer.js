@@ -7,9 +7,9 @@ define([ "../../type", "./methods", "./statics" ], function(type, methods, stati
             dataBytes: 0,
             pointersBytes: 8
         };
-        var Pointers = function(arena, list, isDisowned) {
+        var Pointers = function(arena, isOrphan, list) {
             this._arena = arena;
-            this._isDisowned = isDisowned;
+            this._isOrphan = isOrphan;
             this._segment = list.segment;
             this._begin = list.begin;
             this._length = list.length;

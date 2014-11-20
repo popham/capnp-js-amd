@@ -35,21 +35,11 @@ define([ "../reader/AnyPointer", "../reader/isNull", "./copy/pointer", "./AnyPoi
         _TYPE: t
     };
     Any.prototype.getAs = function(Derefable) {
-        var arena = this._arena;
-        if (!Derefable._READER) {
-            /*
-             * User provided a reader.  Wrap a reader arena around the builder
-             * arena's data to parametrize the Derefable.
-             */
-            arena = arena.asReader();
-        }
+        if (!Derefable._READER) throw new TypeError("Must provide a builder type");
         return Derefable._deref(arena, this._pointer);
     };
     Any.prototype.initAs = function(Derefable) {
-        if (!Derefable._READER) throw new TypeError("Cannot initialize an AnyPointer with a reader type");
+        if (!Derefable._READER) throw new TypeError("Must provide a builder type");
         return Derefable._init(this._arena, this._pointer);
-    };
-    Any.prototype.cloneAsOrphan = function() {
-        return Blob._cloneAsOrphan(this._arena, this._pointer);
     };
 });

@@ -1,12 +1,8 @@
 define([ "../layout/list" ], function(layout) {
     return function(List) {
         return function(arena, pointer, value) {
-            if (!value._isDisowned) {
-                throw new ValueError("Cannot adopt a non-orphan");
-            }
-            if (!arena.isEquivTo(value._arena)) {
-                throw new ValueError("Cannot adopt from a different arena");
-            }
+            if (!value._isOrphan) throw new ValueError("Cannot adopt a non-orphan");
+            if (!arena.isEquivTo(value._arena)) throw new ValueError("Cannot adopt from a different arena");
             var meta = value._rt();
             var blob = {
                 segment: value._segment,
@@ -16,7 +12,7 @@ define([ "../layout/list" ], function(layout) {
                 blob.position -= 8;
             }
             layout.nonpreallocated(arena, pointer, blob, meta, value._length);
-            value._isDisowned = false;
+            value._arena = null;
         };
     };
 });

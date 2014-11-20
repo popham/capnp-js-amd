@@ -1,9 +1,9 @@
 define([ "../../reader/list/Void", "./statics", "./methods" ], function(Reader, statics, methods) {
     var t = Reader._TYPE;
     var ct = Reader._CT;
-    var Voids = function(arena, layout, isDisowned) {
+    var Voids = function(arena, isOrphan, layout) {
         this._arena = arena;
-        this._isDisowned = isDisowned;
+        this._isOrphan = isOrphan;
         this._segment = layout.segment;
         this._begin = layout.begin;
         this._length = layout.length;

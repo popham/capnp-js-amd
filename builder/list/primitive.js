@@ -2,15 +2,15 @@ define([ "./statics", "./methods" ], function(statics, methods) {
     return function(Reader, encoder) {
         var t = Reader._TYPE;
         var ct = Reader._CT;
-        var Primitives = function(arena, list, isDisowned) {
+        var Primitives = function(arena, isOrphan, layout) {
             this._arena = arena;
-            this._isDisowned = isDisowned;
-            this._segment = list.segment;
-            this._begin = list.begin;
-            this._length = list.length;
-            this._dataBytes = list.dataBytes;
-            this._pointersBytes = list.pointersBytes;
-            this._stride = list.dataBytes + list.pointersBytes;
+            this._isOrphan = isOrphan;
+            this._segment = layout.segment;
+            this._begin = layout.begin;
+            this._length = layout.length;
+            this._dataBytes = layout.dataBytes;
+            this._pointersBytes = layout.pointersBytes;
+            this._stride = layout.dataBytes + layout.pointersBytes;
         };
         Primitives._TYPE = t;
         Primitives._CT = ct;

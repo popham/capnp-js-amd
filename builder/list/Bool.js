@@ -1,9 +1,9 @@
 define([ "../../reader/list/Bool", "../../reader/layout/list", "../copy/pointer", "../layout/list", "./statics", "./methods", "../primitives" ], function(Reader, reader, copy, builder, statics, methods, primitives) {
     var t = Reader._TYPE;
     var ct = Reader._CT;
-    var Bools = function(arena, layout, isDisowned) {
+    var Bools = function(arena, isOrphan, layout) {
         this._arena = arena;
-        this._isDisowned = isDisowned;
+        this._isOrphan = isOrphan;
         this._segment = layout.segment;
         this._begin = layout.begin;
         this._length = layout.length;
@@ -25,13 +25,13 @@ define([ "../../reader/list/Bool", "../../reader/layout/list", "../copy/pointer"
     Bools._initOrphan = function(arena, length) {
         var ell = (length >>> 3) + (length & 7 ? 1 : 0);
         var blob = arena._allocate(ell);
-        return new Bools(arena, {
+        return new Bools(arena, true, {
             segment: blob.segment,
             begin: blob.position,
             length: length,
             dataBytes: ct.dataBytes,
             pointersBytes: ct.pointersBytes
-        }, true);
+        });
     };
     Bools._set = statics.set(Bools);
     Bools.prototype = {

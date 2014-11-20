@@ -1,12 +1,12 @@
 define([ "../reader/Data", "./list/statics", "./list/methods", "./layout/list" ], function(Reader, statics, methods, layout) {
     var t = Reader._TYPE;
     var ct = Reader._CT;
-    var Data = function(arena, list, isDisowned) {
+    var Data = function(arena, isOrphan, listLayout) {
         this._arena = arena;
-        this._isDisowned = isDisowned;
-        this._segment = list.segment;
-        this._begin = list.begin;
-        this._length = list.length;
+        this._isOrphan = isOrphan;
+        this._segment = listLayout.segment;
+        this._begin = listLayout.begin;
+        this._length = listLayout.length;
         this._dataBytes = 1;
         this._pointersBytes = 0;
     };

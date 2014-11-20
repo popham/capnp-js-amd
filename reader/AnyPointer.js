@@ -2,12 +2,12 @@ define([ "../type", "./layout/any", "./isNull" ], function(type, any, isNull) {
     var t = new type.Terminal();
     var Any = function(arena, pointer, depth) {
         this._arena = arena;
-        this._pointer = pointer;
         /*
          * The caller is responsible for setting depth.  This parameter just
          * passes through.
          */
         this._depth = depth;
+        this._pointer = pointer;
     };
     Any._TYPE = t;
     Any._deref = function(arena, pointer, depth) {
@@ -18,7 +18,7 @@ define([ "../type", "./layout/any", "./isNull" ], function(type, any, isNull) {
     };
     Any.prototype.getAs = function(Derefable) {
         if (Derefable._READER) {
-            // User provided a builder.  Use the associated reader.
+            console.warn("Cannot cast a reader's AnyPointer to a builder");
             Derefable = Derefable._READER;
         }
         var layout;
@@ -35,7 +35,7 @@ define([ "../type", "./layout/any", "./isNull" ], function(type, any, isNull) {
         } else {
             layout = any.safe(this._arena, this._pointer);
         }
-        return new Derefable(this._arena, this._depth, layout);
+        return new Derefable(this._arena, this._depth, false, layout);
     };
     return Any;
 });

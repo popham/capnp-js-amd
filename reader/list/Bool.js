@@ -6,9 +6,10 @@ define([ "../../type", "../primitives", "./deref", "./methods" ], function(type,
         dataBytes: null,
         pointersBytes: null
     };
-    var Bools = function(arena, depth, list) {
+    var Bools = function(arena, depth, isOrphan, list) {
         this._arena = arena;
         this._depth = depth;
+        this._isOrphan = isOrphan;
         this._segment = list.segment;
         this._begin = list.begin;
         this._length = list.length;

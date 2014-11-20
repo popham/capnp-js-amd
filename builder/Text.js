@@ -1,9 +1,9 @@
 define([ "../reader/Text", "./list/statics", "./list/methods", "./layout/list" ], function(Reader, statics, methods, layout) {
     var t = Reader._TYPE;
     var ct = Reader._CT;
-    var Text = function(arena, layout, isDisowned) {
+    var Text = function(arena, isOrphan, layout) {
         this._arena = arena;
-        this._isDisowned = isDisowned;
+        this._isOrphan = isOrphan;
         this._segment = layout.segment;
         this._begin = layout.begin;
         this._length = layout.length;

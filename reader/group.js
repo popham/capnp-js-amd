@@ -4,6 +4,7 @@ define([ "./methods" ], function(methods) {
             var layout = parent._layout();
             this._arena = parent._arena;
             this._depth = parent._depth;
+            this._isOrphan = false;
             this._segment = layout.segment;
             this._dataSection = layout.dataSection;
             this._pointersSection = layout.pointersSection;

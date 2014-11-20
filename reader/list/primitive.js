@@ -1,9 +1,10 @@
 define([ "../../type", "./deref", "./methods" ], function(type, deref, methods) {
     return function(decoder, ct) {
         var t = new type.Terminal();
-        var Primitives = function(arena, depth, list) {
+        var Primitives = function(arena, depth, isOrphan, list) {
             this._arena = arena;
             this._depth = depth;
+            this._isOrphan = isOrphan;
             this._segment = list.segment;
             this._begin = list.begin;
             this._length = list.length;

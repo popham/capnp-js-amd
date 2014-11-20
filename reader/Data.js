@@ -6,9 +6,10 @@ define([ "../type", "./list/deref", "./list/methods" ], function(type, deref, me
         dataBytes: 1,
         pointersBytes: 0
     };
-    var Data = function(arena, depth, list) {
+    var Data = function(arena, depth, isOrphan, list) {
         this._arena = arena;
         this._depth = depth;
+        this._isOrphan = isOrphan;
         this._segment = list.segment;
         this._begin = list.begin;
         this._length = list.length;

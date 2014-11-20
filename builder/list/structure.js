@@ -1,19 +1,19 @@
-define([ "../../type", "../copy/pointer", "../layout/list", "./deref", "./init", "./methods" ], function(type, copy, list, deref, init, methods) {
+define([ "../../type", "../copy/pointer", "../layout/list", "./deref", "./adopt", "./init", "./methods" ], function(type, copy, list, deref, adopt, init, methods) {
     return function(Builder) {
         var t = new type.List(Builder._TYPE);
         var ct = Builder._LIST_CT;
-        var Structs = function(arena, list, isDisowned) {
+        var Structs = function(arena, isOprhan, layout) {
             if (list.dataBytes === null) {
                 throw new Error("Single bit structures are not supported");
             }
             this._arena = arena;
-            this._isDisowned = isDisowned;
-            this._segment = list.segment;
-            this._begin = list.begin;
-            this._length = list.length;
-            this._dataBytes = list.dataBytes;
-            this._pointersBytes = list.pointersBytes;
-            this._stride = list.dataBytes + list.pointersBytes;
+            this._isOrphan = isOrphan;
+            this._segment = layout.segment;
+            this._begin = layout.begin;
+            this._length = layout.length;
+            this._dataBytes = layout.dataBytes;
+            this._pointersBytes = layout.pointersBytes;
+            this._stride = layout.dataBytes + layout.pointersBytes;
         };
         Structs._TYPE = t;
         Structs._CT = ct;
@@ -29,6 +29,7 @@ define([ "../../type", "../copy/pointer", "../layout/list", "./deref", "./init",
             throw new Error("Single bit structures are not supported");
         } else {
             Structs._init = init(Structs);
+            Structs._adopt = adopt(Structs);
         }
         Structs.prototype = {
             _TYPE: t,
@@ -42,13 +43,13 @@ define([ "../../type", "../copy/pointer", "../layout/list", "./deref", "./init",
             }
             var position = this._begin + index * this._stride;
             var pointers = position + this._dataBytes;
-            return new Builder(this._arena, {
+            return new Builder(this._arena, false, {
                 meta: 0,
                 segment: this._segment,
                 dataSection: position,
                 pointersSection: pointers,
                 end: pointers + this._pointersBytes
-            }, false);
+            });
         };
         Structs.prototype.setWithCaveats = function(index, instance) {
             if (Builder._TYPE !== instance._TYPE) {
