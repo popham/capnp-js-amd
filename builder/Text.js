@@ -17,13 +17,16 @@ define([ "../reader/Text", "./list/statics", "./list/methods", "./layout/list" ]
     // http://stackoverflow.com/questions/17191945/conversion-between-utf-8-arraybuffer-and-string#answer-17192845
     Text._encode = function(string) {
         string = unescape(encodeURIComponent(string));
-        var uintArray = [];
+        var uintArray = new Uint8Array(string.length);
         for (var i = 0; i < string.length; ++i) {
-            uintArray.push(string.charCodeAt(i));
+            uintArray[i] = string.charCodeAt(i);
         }
-        return new Uint8Array(uintArray);
+        return uintArray;
     };
-    statics.install(Text);
+    Text._deref = statics.deref(Text);
+    Text._adopt = statics.adopt(Text);
+    Text._init = statics.init(Text);
+    Text._initOrphan = statics.initOrphan(Text);
     Text._setParams = function(value) {
         if (t === value._TYPE) {
             return {
@@ -61,9 +64,9 @@ define([ "../reader/Text", "./list/statics", "./list/methods", "./layout/list" ]
         return this._segment.subarray(this._begin, this._begin + this._length);
     };
     Text.prototype.asBytes = function() {
-        return this._segment.subarray(this._begin, this._begin + this._length);
+        return this._segment.subarray(this._begin, this._begin + this._length - 1);
     };
-    Text.prototype.asString = function() {
+    Text.prototype.toString = function() {
         return Reader._decode(this.asBytes());
     };
     return Text;

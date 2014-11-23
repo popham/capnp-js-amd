@@ -12,7 +12,7 @@ define([ "../layout/list" ], function(layout) {
                 blob.position -= 8;
             }
             layout.nonpreallocated(arena, pointer, blob, meta, value._length);
-            value._arena = null;
+            value._isOrphan = false;
         };
     };
 });

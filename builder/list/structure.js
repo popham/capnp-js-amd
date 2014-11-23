@@ -2,7 +2,7 @@ define([ "../../type", "../copy/pointer", "../layout/list", "./deref", "./adopt"
     return function(Builder) {
         var t = new type.List(Builder._TYPE);
         var ct = Builder._LIST_CT;
-        var Structs = function(arena, isOprhan, layout) {
+        var Structs = function(arena, isOrphan, layout) {
             if (list.dataBytes === null) {
                 throw new Error("Single bit structures are not supported");
             }
@@ -37,6 +37,7 @@ define([ "../../type", "../copy/pointer", "../layout/list", "./deref", "./adopt"
             _rt: methods.rt,
             _layout: methods.layout
         };
+        methods.install(Structs.prototype);
         Structs.prototype.get = function(index) {
             if (index < 0 || this._length <= index) {
                 throw new RangeError();

@@ -40,9 +40,7 @@ define([ "../../reader/list/Bool", "../../reader/layout/list", "../copy/pointer"
         _rt: methods.rt,
         _layout: methods.layout
     };
-    Bools.prototype.length = function() {
-        return this._length;
-    };
+    methods.install(Bools.prototype);
     Bools.prototype.get = Reader.prototype.get;
     Bools.prototype.set = function(index, value) {
         if (typeof value !== "boolean") {

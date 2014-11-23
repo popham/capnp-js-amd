@@ -22,7 +22,7 @@ define([ "../reader/layout/structure", "../reader/methods", "./layout/structure"
                 segment: value._segment,
                 position: value._dataSection
             }, value._rt());
-            value._arena = null;
+            value._isOrphan = false;
         };
         Structure._deref = function(arena, pointer) {
             var instance = new Structure(arena, false, reader.unsafe(arena, pointer));

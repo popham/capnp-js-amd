@@ -42,4 +42,5 @@ define([ "../reader/AnyPointer", "../reader/isNull", "./copy/pointer", "./AnyPoi
         if (!Derefable._READER) throw new TypeError("Must provide a builder type");
         return Derefable._init(this._arena, this._pointer);
     };
+    return Any;
 });

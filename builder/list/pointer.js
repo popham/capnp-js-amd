@@ -27,23 +27,28 @@ define([ "../../type", "./methods", "./statics" ], function(type, methods, stati
             _rt: methods.rt,
             _layout: methods.layout
         };
+        methods.install(Pointers.prototype);
         Pointers.prototype.get = function(index) {
+            return Nonstruct._deref(this._arena, this._pointer(index));
+        };
+        Pointers.prototype._pointer = function(index) {
             if (index < 0 || this._length <= index) {
                 throw new RangeError();
             }
-            return Nonstruct._deref(this._arena, {
-                segment: this._segment,
-                position: this._begin + this._dataBytes + index * this._stride
-            });
-        };
-        Pointers.prototype._pointer = function(index) {
+            /* If there exists a data section, then the pointer has been
+             * upgraded.  Skip the data section, and the upgraded pointer will
+             * be the first element in the pointers section.
+             */
             return {
                 segment: this._segment,
-                position: this._begin + index * this._stride
+                position: this._begin + this._dataBytes + index * this._stride
             };
         };
         Pointers.prototype.set = function(index, value) {
-            Nonstruct._set(this._arena, this._pointer(index), value);
+            Nonstruct._set(this._arena, this._pointer(index), Nonstruct._setParams(value));
+        };
+        Pointers.prototype.init = function(index, length) {
+            return Nonstruct._init(this._arena, this._pointer(index), length);
         };
         Pointers.prototype.adopt = function(index, orphan) {
             Nonstruct._adopt(this._arena, this._pointer(index), orphan);

@@ -37,7 +37,7 @@ define([ "../type", "./list/deref", "./list/methods" ], function(type, deref, me
     Text.prototype.asBytes = function() {
         return this._segment.subarray(this._begin, this._begin + this._length - 1);
     };
-    Text.prototype.asString = function() {
+    Text.prototype.toString = function() {
         return Text._decode(this.asBytes());
     };
     return Text;

@@ -21,6 +21,7 @@ define([ "./statics", "./methods" ], function(statics, methods) {
             _rt: methods.rt,
             _layout: methods.layout
         };
+        methods.install(Primitives.prototype);
         Primitives.prototype.get = Reader.prototype.get;
         Primitives.prototype.set = function(index, value) {
             if (index < 0 || this._length <= index) {

@@ -21,6 +21,7 @@ define([ "../../reader/list/Void", "./statics", "./methods" ], function(Reader, 
         _rt: methods.rt,
         _layout: methods.layout
     };
+    methods.install(Voids.prototype);
     Voids.prototype.get = Reader.prototype.get;
     return Voids;
 });

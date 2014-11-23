@@ -30,7 +30,7 @@ define([ "../reader/AnyPointerBlob", "../reader/isNull", "../reader/layout/any",
             }, m);
             break;
         }
-        value._arena = null;
+        value._isOrphan = false;
     };
     Any.prototype = {
         _TYPE: t
