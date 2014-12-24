@@ -1,4 +1,4 @@
-define([ "../../type", "../primitives", "./deref", "./methods" ], function(type, primitives, deref, methods) {
+define([ "../../type", "../primitives", "./statics", "./methods" ], function(type, primitives, statics, methods) {
     var t = new type.Terminal();
     var ct = {
         meta: 1,
@@ -20,7 +20,10 @@ define([ "../../type", "../primitives", "./deref", "./methods" ], function(type,
     };
     Bools._TYPE = t;
     Bools._CT = ct;
-    Bools._deref = deref(Bools);
+    Bools._FIELD = {};
+    Bools._HASH = "L|B";
+    Bools._B64_NULL = "AQAAAAEAAAA=";
+    statics.install(Bools);
     Bools.prototype = {
         _TYPE: t,
         _CT: ct,

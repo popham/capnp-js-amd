@@ -14,6 +14,8 @@ define([ "../../reader/list/Void", "./statics", "./methods" ], function(Reader, 
     Voids._READER = Reader;
     Voids._TYPE = t;
     Voids._CT = ct;
+    Voids._FIELD = {};
+    Voids._HASH = Reader._HASH;
     statics.install(Voids);
     Voids.prototype = {
         _TYPE: t,

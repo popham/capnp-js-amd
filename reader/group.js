@@ -1,5 +1,5 @@
 define([ "./methods" ], function(methods) {
-    return function() {
+    return function(parentScope) {
         var Group = function(parent) {
             var layout = parent._layout();
             this._arena = parent._arena;
@@ -10,7 +10,9 @@ define([ "./methods" ], function(methods) {
             this._pointersSection = layout.pointersSection;
             this._end = layout.end;
         };
+        Group._PARENT = parentScope;
         Group.prototype = {
+            _PARENT: parentScope,
             _rt: methods.rt,
             _layout: methods.layout
         };

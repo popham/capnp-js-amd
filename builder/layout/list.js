@@ -7,6 +7,7 @@ define([ "../far", "./structure" ], function(far, structure) {
     };
     var compositeLo = function(pointer, blob, meta, length) {
         noncompositeLo(pointer, 7, length * (meta.dataBytes + meta.pointersBytes >>> 3));
+        // Leading tag on the list's blob
         blob.segment[blob.position] = length << 2;
         blob.segment[blob.position + 1] = length >>> 6;
         blob.segment[blob.position + 2] = length >>> 14;
@@ -20,11 +21,7 @@ define([ "../far", "./structure" ], function(far, structure) {
         pointer.segment[pointer.position + 1] = offset >>> 6;
         pointer.segment[pointer.position + 2] = offset >>> 14;
         pointer.segment[pointer.position + 3] = offset >>> 22;
-        if (meta.layout === 7) {
-            compositeLo(pointer, blob, meta, length);
-        } else {
-            noncompositeLo(pointer, meta.layout, length);
-        }
+        if (meta.layout === 7) compositeLo(pointer, blob, meta, length); else noncompositeLo(pointer, meta.layout, length);
     };
     var preallocated = function(pointer, blob, meta, length) {
         if (pointer.segment === blob.segment) {
@@ -36,17 +33,7 @@ define([ "../far", "./structure" ], function(far, structure) {
             };
             // Build the local pointer.
             land.segment[land.position] = 1;
-            if (meta.layout === 7) {
-                compositeLo(land, blob, meta, length);
-                // Write the list's tag.
-                blob.segment[blob.position] = length << 2;
-                blob.segment[blob.position + 1] = length >>> 6;
-                blob.segment[blob.position + 2] = length >>> 14;
-                blob.segment[blob.position + 3] = length >>> 22;
-                structure.wordCounts(blob, meta.dataBytes >>> 3, meta.pointersBytes >>> 3);
-            } else {
-                noncompositeLo(land, meta.layout, length);
-            }
+            if (meta.layout === 7) compositeLo(land, blob, meta, length); else noncompositeLo(land, meta.layout, length);
             // Point at the off-segment blob's local pointer.
             far.terminal(pointer, land);
         }

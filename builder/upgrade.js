@@ -1,33 +1,29 @@
 define([ "../reader/layout/index", "../reader/isNull", "../reader/far", "../reader/list/meta", "./primitives", "./far", "./layout/index", "./shiftOffset" ], function(reader, isNull, farReader, meta, encode, farBuilder, builder, shiftOffset) {
     /*
-     * Update a far pointer with its list or structure pointer if it is local to
-     * `blob`.
+     * Update a far pointer with its list or structure pointer if it shares a
+     * segment with its blob.
      *
      * * arena BuilderArena - Arena that owns `pointer`.
      * * pointer Datum - New pointer location, filled with the initial pointer's
      *   data.  If the blob remains nonlocal, then no-op.
      */
     var far = function(arena, pointer) {
-        var doubleFar = !!(pointer.segment[pointer.position] & 4);
-        var blob = farReader.next(arena, pointer);
-        if (doubleFar) blob = farReader.next(arena, blob);
+        /*
+         * A double far pointer implies that the there was no space on the
+         * blob's segment at construction time.  Without any means to reclaim
+         * memory from a segment, this should remain true.
+         */
+        if (pointer.segment[pointer.position] & 4) return;
+        var blob = farReader.blob(arena, pointer);
         if (pointer.segment === blob.segment) {
             // The blob is now local
             var tag = farReader.tag(arena, pointer);
             var offset = blob.position - (pointer.position + 8);
-            // Copy everything but the offset
+            // Copy tag as pointer (then clobber the offset)
             arena._write(tag, 8, pointer);
-            encode.int32(offset >>> 1, pointer.segment, pointer.position);
-            pointer.segment[pointer.position] |= tag.segment[tag.position] & 3;
-            // Zero the landing pad.
-            if (doubleFar) {
-                // Double-far.
-                tag.position -= 8;
-                arena._zero(tag, 16);
-            } else {
-                // Single-far.
-                arena._zero(tag, 8);
-            }
+            encode.int32(offset >> 1 | tag.segment[tag.position] & 3, pointer.segment, pointer.position);
+            // Zero the single far landing pad.
+            arena._zero(tag, 8);
         }
     };
     /*
@@ -93,15 +89,15 @@ define([ "../reader/layout/index", "../reader/isNull", "../reader/far", "../read
      *   structure.
      */
     var structure = function(arena, pointer, ct) {
-        var rtLength;
         var blob = arena._preallocate(pointer.segment, ct.dataBytes + ct.pointersBytes);
         var layout = reader.structure.unsafe(arena, pointer);
-        rtLength = layout.pointersSection - layout.dataSection;
+        var rtData = layout.pointersSection - layout.dataSection;
+        var rtPointers = layout.end - layout.pointersSection;
         // Verbatim copy of the data section.
         arena._write({
             segment: layout.segment,
             position: layout.dataSection
-        }, rtLength, blob);
+        }, rtData, blob);
         // Set up pointers section source and target iterators.
         var iSource = {
             segment: layout.segment,
@@ -112,19 +108,18 @@ define([ "../reader/layout/index", "../reader/isNull", "../reader/far", "../read
             position: blob.position + ct.dataBytes
         };
         // Make a verbatim copy of the pointers section.
-        rtLength = layout.end - layout.pointersSection;
-        arena._write(iSource, rtLength, iTarget);
+        arena._write(iSource, rtPointers, iTarget);
         if (layout.segment === blob.segment) {
             // Moving within the same segment
-            intrasegmentMovePointers(iTarget, rtLength >>> 3, blob.position - layout.dataSection);
+            intrasegmentMovePointers(iTarget, rtPointers >>> 3, layout.pointersSection - iTarget.position);
             // Clobber the old structure entirely.
             arena._zero({
                 segment: layout.segment,
                 position: layout.dataSection
-            }, rtLength);
+            }, rtPointers);
         } else {
             // Moving to another segment.
-            intersegmentMovePointers(arena, iSource, rtLength >>> 3, iTarget);
+            intersegmentMovePointers(arena, iSource, rtPointers >>> 3, iTarget);
             // Clobber the old structure's data section.
             arena._zero({
                 segment: layout.segment,
@@ -148,10 +143,11 @@ define([ "../reader/layout/index", "../reader/isNull", "../reader/far", "../read
         var bytes = ct.dataBytes + ct.pointersBytes;
         if (ct.layout === 7) {
             blob = arena._preallocate(pointer.segment, 8 + layout.length * bytes);
-            begin = blob.position + 8;
+            builder.list.preallocated(pointer, blob, ct, layout.length);
+            blob.position += 8;
         } else {
             blob = arena._preallocate(pointer.segment, layout.length * bytes);
-            begin = blob.position;
+            builder.list.preallocated(pointer, blob, ct, layout.length);
         }
         var slop = {
             data: ct.dataBytes - rt.dataBytes,
@@ -160,18 +156,16 @@ define([ "../reader/layout/index", "../reader/isNull", "../reader/far", "../read
         /*
          * Shift of the list's first pointer section (only useful for local
          * allocations).
+         * `blob.position+ct.dataBytes - (layout.begin+rt.dataBytes)`.
          */
-        var delta = begin - layout.begin + slop.data;
+        var delta = blob.position + slop.data - layout.begin;
         // Misalignment between compile-time structures and run-time structures.
-        var mis = bytes - rt.dataBytes - rt.pointersBytes;
+        var mis = slop.pointers + slop.data;
         var iSource = {
             segment: layout.segment,
             position: layout.begin
         };
-        var iTarget = {
-            segment: blob.segment,
-            position: begin
-        };
+        var iTarget = blob;
         for (var i = 0; i < layout.length; ++i) {
             // Verbatim copy the data section.
             arena._write(iSource, rt.dataBytes, iTarget);
@@ -179,9 +173,10 @@ define([ "../reader/layout/index", "../reader/isNull", "../reader/far", "../read
             iTarget.position += rt.dataBytes;
             iTarget.position += slop.data;
             if (rt.layout >= 6) {
+                // Make a verbatim copy of the pointers section.
+                arena._write(iSource, rt.pointersBytes, iTarget);
                 if (layout.segment === blob.segment) {
-                    arena._write(iSource, rt.pointersBytes, iTarget);
-                    intrasegmentMovePointers(iTarget, rt.pointersBytes >>> 3, delta + i * mis);
+                    intrasegmentMovePointers(iTarget, rt.pointersBytes >>> 3, -(delta + i * mis));
                     iSource.position += rt.pointersBytes;
                 } else {
                     intersegmentMovePointers(arena, iSource, rt.pointersBytes >>> 3, iTarget);
@@ -190,7 +185,6 @@ define([ "../reader/layout/index", "../reader/isNull", "../reader/far", "../read
             // Realign the target iterator.
             iTarget.position += slop.pointers;
         }
-        builder.list.preallocated(pointer, blob, ct, layout.length);
     };
     return {
         list: list,

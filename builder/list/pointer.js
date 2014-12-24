@@ -1,4 +1,4 @@
-define([ "../../type", "./methods", "./statics" ], function(type, methods, statics) {
+define([ "../../reader/list/meta", "../../type", "../copy/pointer", "../layout/index", "./methods", "./statics" ], function(listMeta, type, copy, layout, methods, statics) {
     return function(Nonstruct) {
         var t = new type.List(Nonstruct._TYPE);
         var ct = {
@@ -20,6 +20,8 @@ define([ "../../type", "./methods", "./statics" ], function(type, methods, stati
         Pointers._READER = Nonstruct;
         Pointers._TYPE = t;
         Pointers._CT = ct;
+        Pointers._FIELD = {};
+        Pointers._HASH = "L|" + Nonstruct._HASH;
         statics.install(Pointers);
         Pointers.prototype = {
             _TYPE: t,
@@ -45,13 +47,32 @@ define([ "../../type", "./methods", "./statics" ], function(type, methods, stati
             };
         };
         Pointers.prototype.set = function(index, value) {
-            Nonstruct._set(this._arena, this._pointer(index), Nonstruct._setParams(value));
+            Nonstruct._set(this._arena, this._pointer(index), value);
         };
         Pointers.prototype.init = function(index, length) {
             return Nonstruct._init(this._arena, this._pointer(index), length);
         };
         Pointers.prototype.adopt = function(index, orphan) {
-            Nonstruct._adopt(this._arena, this._pointer(index), orphan);
+            if (!Nonstruct.equiv(orphan._TYPE)) throw new TypeError();
+            if (!orphan._isOrphan) throw new ValueError("Cannot adopt a non-orphan");
+            if (!this._arena.isEquivTo(orphan._arena)) throw new ValueError("Cannot adopt from a different arena");
+            // AnyPointer to struct => A=0, so handle any pointer type.
+            var ell = orphan._layout();
+            if (ell.meta === 0) {
+                copy.nonpreallocated(this._arena, this._pointer(index), {
+                    segment: ell.segment,
+                    position: ell.begin
+                }, listMeta(ell));
+                orphan._isOrphan = false;
+            } else if (layout.meta === 1) {
+                copy.list.nonpreallocated(this._arena, this._pointer(index), {
+                    segment: layout.segment,
+                    position: layout.begin
+                }, listMeta(layout));
+                orphan._isOrphan = false;
+            } else {
+                throw new ValueError("");
+            }
         };
         return Pointers;
     };

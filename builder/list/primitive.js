@@ -14,6 +14,8 @@ define([ "./statics", "./methods" ], function(statics, methods) {
         };
         Primitives._TYPE = t;
         Primitives._CT = ct;
+        Primitives._FIELD = {};
+        Primitives._HASH = Reader._HASH;
         statics.install(Primitives);
         Primitives.prototype = {
             _TYPE: t,

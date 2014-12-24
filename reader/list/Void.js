@@ -1,4 +1,4 @@
-define([ "../../type", "./deref", "./methods" ], function(type, deref, methods) {
+define([ "../../type", "./statics", "./methods" ], function(type, statics, methods) {
     var t = new type.Terminal();
     var ct = {
         meta: 1,
@@ -25,7 +25,10 @@ define([ "../../type", "./deref", "./methods" ], function(type, deref, methods) 
     };
     Voids._TYPE = t;
     Voids._CT = ct;
-    Voids._deref = deref(Voids);
+    Voids._FIELD = {};
+    Voids._HASH = "L|V";
+    Voids._B64_NULL = "AQAAAAAAAAA=";
+    statics.install(Voids);
     Voids.prototype = {
         _TYPE: t,
         _CT: ct,

@@ -1,4 +1,4 @@
-define([ "../../reader/list/Bool", "../../reader/layout/list", "../copy/pointer", "../layout/list", "./statics", "./methods", "../primitives" ], function(Reader, reader, copy, builder, statics, methods, primitives) {
+define([ "../../reader/list/Bool", "../layout/list", "../primitives", "./field/index", "./statics", "./methods" ], function(Reader, builder, primitives, field, statics, methods) {
     var t = Reader._TYPE;
     var ct = Reader._CT;
     var Bools = function(arena, isOrphan, layout) {
@@ -14,8 +14,10 @@ define([ "../../reader/list/Bool", "../../reader/layout/list", "../copy/pointer"
     Bools._READER = Reader;
     Bools._TYPE = t;
     Bools._CT = ct;
-    Bools._adopt = statics.adopt(Bools);
-    Bools._deref = statics.deref(Bools);
+    Bools._FIELD = {};
+    Bools._HASH = Reader._HASH;
+    statics.deref(Bools);
+    statics.set(Bools);
     Bools._init = function(arena, pointer, length) {
         var ell = (length >>> 3) + (length & 7 ? 1 : 0);
         var blob = arena._preallocate(pointer.segment, ell);
@@ -33,7 +35,7 @@ define([ "../../reader/list/Bool", "../../reader/layout/list", "../copy/pointer"
             pointersBytes: ct.pointersBytes
         });
     };
-    Bools._set = statics.set(Bools);
+    field.install(Bools);
     Bools.prototype = {
         _TYPE: t,
         _CT: ct,

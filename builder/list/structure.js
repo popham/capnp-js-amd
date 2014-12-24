@@ -1,9 +1,9 @@
-define([ "../../type", "../copy/pointer", "../layout/list", "./deref", "./adopt", "./init", "./methods" ], function(type, copy, list, deref, adopt, init, methods) {
+define([ "../../type", "../copy/pointer", "../layout/list", "./field/index", "./statics", "./methods" ], function(type, copy, list, field, statics, methods) {
     return function(Builder) {
         var t = new type.List(Builder._TYPE);
         var ct = Builder._LIST_CT;
         var Structs = function(arena, isOrphan, layout) {
-            if (list.dataBytes === null) {
+            if (layout.dataBytes === null) {
                 throw new Error("Single bit structures are not supported");
             }
             this._arena = arena;
@@ -17,7 +17,10 @@ define([ "../../type", "../copy/pointer", "../layout/list", "./deref", "./adopt"
         };
         Structs._TYPE = t;
         Structs._CT = ct;
-        Structs._deref = deref(Structs);
+        Structs._FIELD = {};
+        Structs._HASH = "L|" + Builder._HASH;
+        statics.deref(Structs);
+        statics.set(Structs);
         var stride = Structs._CT.dataBytes + Structs._CT.pointersBytes;
         if (Structs._CT.layout === 7) {
             Structs._init = function(arena, pointer, length) {
@@ -25,12 +28,23 @@ define([ "../../type", "../copy/pointer", "../layout/list", "./deref", "./adopt"
                 list.preallocated(pointer, blob, Structs._CT, length);
                 return Structs._deref(arena, pointer);
             };
+            Structs._initOrphan = function(arena, length) {
+                var blob = arena._allocate(8 + length * stride);
+                return new Structs(arena, true, {
+                    segment: blob.segment,
+                    begin: 8 + blob.position,
+                    length: length,
+                    dataBytes: ct.dataBytes,
+                    pointersBytes: ct.pointersBytes
+                });
+            };
         } else if (Structs._CT.layout === 1) {
             throw new Error("Single bit structures are not supported");
         } else {
-            Structs._init = init(Structs);
-            Structs._adopt = adopt(Structs);
+            statics.init(Structs);
+            statics.initOrphan(Structs);
         }
+        field.install(Structs);
         Structs.prototype = {
             _TYPE: t,
             _CT: ct,

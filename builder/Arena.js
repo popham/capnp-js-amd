@@ -27,12 +27,8 @@ define([ "../reader/isNull", "../reader/Arena", "../reader/layout/structure", ".
         var ctSize = Structure._CT.dataBytes + Structure._CT.pointersBytes;
         return Structure._init(this, this._root());
     };
-    Builder.prototype.initOrphan = function(Type) {
-        /*
-         * Only builders expose `initOrphan`, so providing a reader will error
-         * out, as it should.
-         */
-        return Type._initOrphan(this);
+    Builder.prototype.initOrphan = function(Type, optionalLength) {
+        return Type._initOrphan(this, optionalLength);
     };
     Builder.prototype.getRoot = function(Structure) {
         var ct = Structure._CT;
@@ -86,7 +82,7 @@ define([ "../reader/isNull", "../reader/Arena", "../reader/layout/structure", ".
     /*
      * Allocate space on a segment.
      *
-     * bytes UInt32 - Number of bytes sought.  This number must be word-aligned.
+     * bytes UInt32 - Number of bytes sought.
      *
      * RETURNS: Datum
      * * `segment` - The segment containing the allocated space.
