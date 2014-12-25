@@ -1,6 +1,6 @@
 {
   "name": "capnp-js",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "authors": [
     "Tim Popham"
   ],
@@ -18,7 +18,7 @@
     "serialization"
   ],
   "license": "MIT",
-  "homepage": "https://github.com/popham/capnp-js-amd/",
+  "homepage": "https://github.com/popham/capnp-js-base/",
   "ignore": [
     "**/.*"
   ]
