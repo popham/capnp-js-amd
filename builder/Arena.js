@@ -28,6 +28,11 @@ define([ "../reader/isNull", "../reader/Arena", "../reader/layout/structure", ".
         return Structure._init(this, this._root());
     };
     Builder.prototype.initOrphan = function(Type, optionalLength) {
+        if (optionalLength === undefined) {
+            if (Type._CT.meta === 1) throw new Error("'initOrphan' for list types requires a length");
+        } else {
+            if (Type._CT.meta === 0) throw new Error("'initOrphan' for struct types requires no length");
+        }
         return Type._initOrphan(this, optionalLength);
     };
     Builder.prototype.getRoot = function(Structure) {
